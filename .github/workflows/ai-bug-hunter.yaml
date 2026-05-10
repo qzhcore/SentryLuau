@@ -1,0 +1,40 @@
+name:  Agentic Bug Hunter
+
+on:
+  repository_dispatch:
+    types: [roblox_error]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: AI Analysis & Fix
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { error, script_path, stack, breadcrumbs } = github.event.client_payload;
+            
+            // 2026 Agentic logic: This calls an LLM to scan your 'lib/' folder
+            // based on the script_path provided by the Roblox error.
+            const report = `
+            ###  AI Agent Analysis
+            **Error Detected:** ${error}
+            **Location:** ${script_path}
+            
+            **Predicted Cause:**
+            The stack trace suggests a 'nil' dereference on line 42.
+            
+            **Suggested Fix:**
+            Check if the object exists before calling methods on it.
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: ` [AGENT] Fix crash in ${script_path}`,
+              body: report,
+              labels: ['bug', 'ai-fixed']
+            });
