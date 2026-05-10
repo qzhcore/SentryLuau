@@ -1,0 +1,6 @@
+{
+  "name": "SentryLuau",
+  "tree": {
+    "$path": "lib"
+  }
+}
